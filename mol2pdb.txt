@@ -1,0 +1,37 @@
+## you have to have a folder with all mol2 files you want to convert,
+## the script will take them as input and converted into pdb in new folder
+
+## library to manage files
+import os
+## library to work with pymol
+import pymol
+from pymol import cmd
+
+
+# What is the working directory?
+pwd = os.getcwd()
+
+# Where do you want to place final results?
+if not os.path.exists('pdbs'):
+    os.makedirs('pdbs')
+
+# Where are the input files?
+# All mol2 files should exist in the current directory
+
+# Initialize PyMOL
+pymol.finish_launching(['pymol', '-cq'])
+
+for file in os.listdir():
+    if file.endswith('.mol2'):
+        print(str(file) + ' is being processed')
+        cmd.set('pdb_use_ter_records', 1)  # Use TER records for chain breaks
+        cmd.load(os.path.join(pwd, file), 'mol2_object')
+        # Check if the cmd object has the h_add attribute
+        add_hydrogen = hasattr(cmd, 'h_add')
+        if add_hydrogen == False:
+            cmd.h_add('mol2_object')  # Add hydrogen atoms
+        cmd.sort()  # Sort atoms
+        cmd.save(os.path.join('pdbs', os.path.splitext(file)[0] + '.pdb'), 'mol2_object')
+
+# Quit PyMOL
+cmd.quit()
